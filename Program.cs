@@ -9,9 +9,9 @@ namespace SmoothMovementDistance
     class Program
     {
         static RenderWindow window = new RenderWindow(new VideoMode(700, 700), "Test", Styles.Close, new ContextSettings() { AntialiasingLevel = 8 });
-        static RectangleShape line = new RectangleShape() { Position = new Vector2f(50, window.Size.Y / 2), Size = new Vector2f(window.Size.X - 100, 1), FillColor = Color.Yellow};
-        static Obj circle = new Obj(30, new Color(0, 255, 175));
-        static Obj circle1 = new Obj(5, new Color(0, 175, 255));
+        static RectangleShape line = new RectangleShape() { Position = new Vector2f(50, window.Size.Y / 2), Size = new Vector2f(window.Size.X - 100, 1), FillColor = new Color(50,50,50)};
+        static Obj circle = new Obj(20, new Color(130, 200, 255));
+        static Obj circle1 = new Obj(5, new Color(0, 200, 255));
 
         static List<CircleShape> trails = new List<CircleShape>();
 
@@ -26,8 +26,12 @@ namespace SmoothMovementDistance
              new Toggle (1, new Vector2f(20,40)),
              new Toggle (2, new Vector2f(20,70)),
              new Toggle (3, new Vector2f(20,100)),
+             new Toggle (4, new Vector2f(20,130)),
         };
 
+        static float spd = 5;
+        static int tick;
+        static bool moveX = true;
         static void Main(string[] args)
         {
             window.SetFramerateLimit(60);
@@ -35,14 +39,19 @@ namespace SmoothMovementDistance
 
             while(window.IsOpen)
             {
+                tick++;
                 circle.Update1(1, line.Position, line.Size.X, true);
-                circle1.Update2(5, circle.pos, 50, true, true);
+                circle1.Update2(spd, circle.pos, 50, rotX: moveX, rotY: true);
 
                 if (drawTrail)
-                    trails.Add(new CircleShape(3) { Position = circle1.pos, Origin = new Vector2f(3, 3), FillColor = new Color(200, 125, 0) });
+                    trails.Add(new CircleShape(2) { Position = circle1.pos, Origin = new Vector2f(3, 3), FillColor = new Color(0, 150, 200) });
                 else
                     trails.Clear();
 
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Up) && tick % 20 == 0)
+                    spd++;
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Down) && tick % 20 == 0)
+                    spd--;
 
                 if (Mouse.IsButtonPressed(Mouse.Button.Left))
                     foreach (var t in toggles)
@@ -50,13 +59,13 @@ namespace SmoothMovementDistance
                             t.Update();
                 // Drawing
                 window.Clear(new Color(0,0,0));
-
+                toggles[1].text.DisplayedString = "Cricle 2 | Speed: " + spd.ToString();
                 if (drawLine) window.Draw(line);
                 if (drawC1) window.Draw(circle.shape);
-                if (drawC2) window.Draw(circle1.shape);
                 if (drawTrail) 
-                foreach (var t in trails)
-                    window.Draw(t);
+                    foreach (var t in trails)
+                        window.Draw(t);
+                if (drawC2) window.Draw(circle1.shape);
 
                 foreach (var t in toggles)
                     window.Draw(t.text);
@@ -117,7 +126,11 @@ namespace SmoothMovementDistance
                         text.FillColor = drawLine ? Color.Green : Color.Red;
                         break;
                     case 3:
-                        text.DisplayedString = "Trail";
+                        text.DisplayedString = "Trail ";
+                        text.FillColor = drawTrail ? Color.Green : Color.Red;
+                        break;
+                    case 4:
+                        text.DisplayedString = "Move X ";
                         text.FillColor = drawTrail ? Color.Green : Color.Red;
                         break;
                 }
@@ -146,6 +159,10 @@ namespace SmoothMovementDistance
                     case 3:
                         drawTrail = !drawTrail;
                         text.FillColor = drawTrail ? Color.Green : Color.Red;
+                        break;
+                    case 4:
+                        moveX = !moveX;
+                        text.FillColor = moveX ? Color.Green : Color.Red;
                         break;
                 }
             }
